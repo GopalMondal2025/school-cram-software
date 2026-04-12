@@ -1,10 +1,10 @@
-const bcrypt = require('bcrypt');
-const Admin = require('../models/adminSchema.js');
+import { genSalt, hash, compare } from 'bcrypt';
+import Admin from '../models/adminSchema.js';
 
 const adminRegister = async (req, res) => {
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash(req.body.password, salt);
+        const salt = await genSalt(10);
+        const hashedPass = await hash(req.body.password, salt);
 
         const admin = new Admin({
             ...req.body,
@@ -34,7 +34,7 @@ const adminLogIn = async (req, res) => {
     if (req.body.email && req.body.password) {
         let admin = await Admin.findOne({ email: req.body.email });
         if (admin) {
-            const validated = await bcrypt.compare(req.body.password, admin.password);
+            const validated = await compare(req.body.password, admin.password);
             if (validated) {
                 admin.password = undefined;
                 res.send(admin);
@@ -76,8 +76,8 @@ const deleteAdmin = async (req, res) => {
 const updateAdmin = async (req, res) => {
     try {
         if (req.body.password) {
-            const salt = await bcrypt.genSalt(10)
-            res.body.password = await bcrypt.hash(res.body.password, salt)
+            const salt = await genSalt(10)
+            res.body.password = await hash(res.body.password, salt)
         }
         let result = await Admin.findByIdAndUpdate(req.params.id,
             { $set: req.body },
@@ -90,4 +90,4 @@ const updateAdmin = async (req, res) => {
     }
 }
 
-module.exports = { adminRegister, adminLogIn, getAdminDetail, deleteAdmin, updateAdmin };
+export { adminRegister, adminLogIn, getAdminDetail, deleteAdmin, updateAdmin };

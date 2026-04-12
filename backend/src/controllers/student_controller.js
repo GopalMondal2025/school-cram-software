@@ -1,11 +1,11 @@
-const bcrypt = require('bcrypt');
-const Student = require('../models/studentSchema.js');
-const Subject = require('../models/subjectSchema.js');
+import { genSalt, hash, compare } from 'bcrypt';
+import Student from '../models/studentSchema.js';
+import Subject from '../models/subjectSchema.js';
 
 const studentRegister = async (req, res) => {
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash(req.body.password, salt);
+        const salt = await genSalt(10);
+        const hashedPass = await hash(req.body.password, salt);
 
         const existingStudent = await Student.findOne({
             rollNum: req.body.rollNum,
@@ -37,7 +37,7 @@ const studentLogIn = async (req, res) => {
     try {
         let student = await Student.findOne({ rollNum: req.body.rollNum, name: req.body.studentName });
         if (student) {
-            const validated = await bcrypt.compare(req.body.password, student.password);
+            const validated = await compare(req.body.password, student.password);
             if (validated) {
                 student = await student.populate("school", "schoolName")
                 student = await student.populate("sclassName", "sclassName")
@@ -129,8 +129,8 @@ const deleteStudentsByClass = async (req, res) => {
 const updateStudent = async (req, res) => {
     try {
         if (req.body.password) {
-            const salt = await bcrypt.genSalt(10)
-            res.body.password = await bcrypt.hash(res.body.password, salt)
+            const salt = await genSalt(10)
+            res.body.password = await hash(res.body.password, salt)
         }
         let result = await Student.findByIdAndUpdate(req.params.id,
             { $set: req.body },
@@ -272,7 +272,7 @@ const removeStudentAttendance = async (req, res) => {
 };
 
 
-module.exports = {
+export {
     studentRegister,
     studentLogIn,
     getStudents,

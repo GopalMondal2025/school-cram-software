@@ -1,12 +1,12 @@
-const bcrypt = require('bcrypt');
-const Teacher = require('../models/teacherSchema.js');
-const Subject = require('../models/subjectSchema.js');
+import { genSalt, hash, compare } from 'bcrypt';
+import Teacher from '../models/teacherSchema.js';
+import Subject from '../models/subjectSchema.js';
 
 const teacherRegister = async (req, res) => {
     const { name, email, password, role, school, teachSubject, teachSclass } = req.body;
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash(password, salt);
+        const salt = await genSalt(10);
+        const hashedPass = await hash(password, salt);
 
         const teacher = new Teacher({ name, email, password: hashedPass, role, school, teachSubject, teachSclass });
 
@@ -30,7 +30,7 @@ const teacherLogIn = async (req, res) => {
     try {
         let teacher = await Teacher.findOne({ email: req.body.email });
         if (teacher) {
-            const validated = await bcrypt.compare(req.body.password, teacher.password);
+            const validated = await compare(req.body.password, teacher.password);
             if (validated) {
                 teacher = await teacher.populate("teachSubject", "subName sessions")
                 teacher = await teacher.populate("school", "schoolName")
@@ -192,7 +192,7 @@ const teacherAttendance = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     teacherRegister,
     teacherLogIn,
     getTeachers,
